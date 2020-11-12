@@ -12,6 +12,6 @@ def make_prediction(name):
     test_image = np.expand_dims(test_image, axis=0)
     result = loaded.predict(test_image)
     
-    os.remove(os.path.join('assets/uploads/'+ name))
+    # os.remove(os.path.join('assets/uploads/'+ name))
     return result[0][0]
 
