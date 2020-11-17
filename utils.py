@@ -34,11 +34,6 @@ def allowed_file(filename):
 def logger(msg, req):
     return app.logger.info(str(msg + ' ' + str(req)))
 
-def check_for_link(req):
-    if req.form['is_link'] in ['true', 'True']:
-        return True
-    else: return False
-
            
 from keras.models import load_model
 from keras_preprocessing import image
