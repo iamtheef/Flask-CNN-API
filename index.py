@@ -1,8 +1,7 @@
 from flask import request
 from flask_http_response import success, error
 from werkzeug.utils import secure_filename
-from utils import find_file, _download, allowed_file, make_prediction, logger
-import os
+from utils import find_file, _download, allowed_file, logger, call_prediction
 from os import path
 from config import app
 
@@ -20,21 +19,12 @@ def predict():
     if is_link:
         file = _download(name)
         if file['success']:
-            try:
-                prediction = str(make_prediction(file['name']))
-                logger('Successful prediction', request)
-                return success.return_response(message=prediction, status=200)
-            except:
-                logger('Problem appeared ', request)
-                os.remove(os.path.join('assets/uploads/' + file['name']))
-                return error.return_response(message='Something went wrong', status=204)
+            call_prediction(file['name'])
         else:
             logger('Faulty link', request)
             return error.return_response(message='Link is not correct', status=400)
-    if find_file(name):
-        prediction = str(make_prediction(name))
-        logger('Successful prediction', request)
-        return success.return_response(message=prediction, status=200)
+    elif find_file(name):
+        call_prediction(name)
     else:
         logger('File not found', request)
         return error.return_response(message='File not found', status=404)
@@ -42,7 +32,6 @@ def predict():
 
 @app.route('/upload/', methods=['POST'])
 def upload_file():
-    print(request.get_json())
     f = request.files['image']
     if allowed_file(f.filename):
         f.save(path.join('assets/uploads/') + secure_filename(f.filename))
