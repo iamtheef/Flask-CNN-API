@@ -1,4 +1,4 @@
-from flask import Flask, request
+from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
 from logging.config import dictConfig
 from flask_cors import CORS

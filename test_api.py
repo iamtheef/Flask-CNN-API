@@ -1,15 +1,75 @@
 import unittest
 from config import app
+
+### it's actually used ###
 import index as api
+### --- ###
 import utils
+import json
+
 
 class TestApi(unittest.TestCase):
 
-    app.config['ENV'] = 'TESTING'
-    # def test_endpoints(self):
-    #     self.assertEqual(api.hello_world(), 'hello all possible worlds --- -- - ***')
+    def setUp(self):
+        self.app = app.test_client()
+        app.config['ENV'] = 'STAGING'
+
+    def test_endpoints(self):
+        headers = {"Content-Type": "application/json"}
+
+        response = self.app.get('/')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual(response.json['message'], 'hello all possible worlds --- -- - ***')
+
+        # testing the prediction endpoint
+        payload = json.dumps({
+            "isLink": True,
+            "input": "http://www.reportingday.com/wp-content/uploads/2018/06/Cat-Sleeping-Pics.jpg"
+        })
+        response = self.app.post('/predict/', data=payload, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.json['success'])
+        self.assertEqual(response.json['message'], 'cat')
+
+        payload = json.dumps({
+            "isLink": True,
+            "input": "http://images.hellogiggles.com/uploads/2017/02/04230309/happy-dog.jpg"
+        })
+        response = self.app.post('/predict/', data=payload, headers=headers)
+        self.assertEqual(200, response.status_code)
+        self.assertTrue(response.json['success'])
+        self.assertEqual(response.json['message'], 'dog')
+
+        payload = json.dumps({
+            "isLink": True,
+            "input": "http://images.hellogiggles.com/uploads/2017"
+        })
+        response = self.app.post('/predict/', data=payload, headers=headers)
+        self.assertEqual(204, response.status_code)
+
+        payload = json.dumps({
+            "isLink": False,
+            "input": "http://images.hellogiggles.com/uploads/2017"
+        })
+        response = self.app.post('/predict/', data=payload, headers=headers)
+        self.assertEqual(404, response.status_code)
+
+        # testing upload endpoint
+        file = "assets/test_images/2.jpg"
+        payload = {
+            'image': (open(file, 'rb'), file)
+        }
+        response = self.app.post('/upload/', data=payload)
+        self.assertEqual(200, response.status_code)
+
+        payload = {
+            'image': (open(file, 'rb'), 'file')
+        }
+        response = self.app.post('/upload/', data=payload)
+        self.assertEqual(400, response.status_code)
 
     def test_utils(self):
+        app.config['ENV'] = 'TESTING'
         # allowing files types
         self.assertTrue(utils.allowed_file('filename.jpg'))
         self.assertFalse(utils.allowed_file('filename.gif'))
@@ -22,7 +82,7 @@ class TestApi(unittest.TestCase):
         self.assertFalse(utils.find_file('3.jpg'))
 
         # download function
-        file = utils._download('https://external-content.duckduckgo.com/iu/?u=http%3A%2F%2F2.bp.blogspot.com%2F-WtdFq_e6eKo%2FTV5W5s-hS-I%2FAAAAAAAAAvM%2FgmCUYOx3bX8%2Fs1600%2FAnimals_Cats_Small_cat_005241_.jpg&f=1&nofb=1')
+        file = utils._download('http://www.reportingday.com/wp-content/uploads/2018/06/Cat-Sleeping-Pics.jpg')
         self.assertTrue(file['success'])
         self.assertEqual(file['name'], file['name'])
 
@@ -33,7 +93,8 @@ class TestApi(unittest.TestCase):
         # predict function
         self.assertEqual(utils.make_prediction('1.jpg'), 'dog')
         self.assertEqual(utils.make_prediction('2.jpg'), 'cat')
-        
+        self.assertRaises(FileNotFoundError, utils.make_prediction, 'asd.jpg')
+
 
 if __name__ == '__main__':
     unittest.main()
