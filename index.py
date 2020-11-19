@@ -19,12 +19,12 @@ def predict():
     if is_link:
         file = _download(name)
         if file['success']:
-            call_prediction(file['name'])
+            return call_prediction(file['name'])
         else:
             logger('Faulty link', request)
             return error.return_response(message='Link is not correct', status=400)
     elif find_file(name):
-        call_prediction(name)
+        return call_prediction(name)
     else:
         logger('File not found', request)
         return error.return_response(message='File not found', status=404)

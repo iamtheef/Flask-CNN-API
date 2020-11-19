@@ -6,25 +6,34 @@ import requests
 import uuid
 from config import app
 
+_images = os.path.join('assets/uploads/')
 
-search_path = os.path.join('assets/uploads/')
 
 def find_file(filename):
-    for root, dirs, files in os.walk(search_path):
+    for root, dirs, files in os.walk(_images):
             if filename in files:
                 return True
     return False
+
+
+def remove_file(filename):
+    try:
+        os.remove(os.path.join(_images + filename))
+        return True
+    except:
+        return False
             
 
 def _download(url):
     _filename = str(uuid.uuid4())
     try:
-        Path(os.path.join('assets/uploads/'+ _filename + '.jpg')).touch()
-        file = requests.get(url)
-        open(os.path.join('assets/uploads/'+ _filename + '.jpg'), 'wb').write(file.content)
+        Path(os.path.join(_images + _filename + '.jpg')).touch()
+        f = open(os.path.join(_images + _filename + '.jpg'), 'wb')
+        f.write(requests.get(url).content)
+        f.close()
         return {'success': True, 'name': _filename + '.jpg'}
     except:
-        os.remove(os.path.join('assets/uploads/'+ _filename + '.jpg'))
+        remove_file(_filename + '.jpg')
         return {'success': False, 'name': None}
 
 
@@ -45,22 +54,23 @@ os.environ['CUDA_VISIBLE_DEVICES'] = "0"
 
 
 def make_prediction(name):
-    loaded = load_model(os.path.join('assets/model_50.h5'), compile=False)
-    test_image = image.load_img(os.path.join('assets/uploads/'+ name), target_size=(64, 64))
+    loaded = load_model(os.path.join('assets/model_30.h5'), compile=False)
+    test_image = image.load_img(os.path.join(_images + name), target_size=(64, 64))
     test_image = image.img_to_array(test_image)
     test_image = np.expand_dims(test_image, axis=0)
     result = loaded.predict(test_image)
-    
-    os.remove(os.path.join('assets/uploads/'+ name))
-    return result[0][0]
+
+    if app.config['ENV'] != 'TESTING':
+        remove_file(name)
+    return 'cat' if result[0][0] == 0 else 'dog'
 
 
 def call_prediction(input):
     try:
-        prediction = str(make_prediction(input))
+        prediction = make_prediction(input)
         logger('Successful prediction', request)
         return success.return_response(message=prediction, status=200)
     except:
         logger('Problem appeared ', request)
-        os.remove(os.path.join('assets/uploads/' + input))
+        remove_file(input)
         return error.return_response(message='Something went wrong', status=204)

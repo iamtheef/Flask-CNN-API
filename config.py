@@ -4,6 +4,7 @@ from logging.config import dictConfig
 from flask_cors import CORS
 
 app = Flask(__name__)
+app.config['ENV'] = 'PRODUCTION'
 CORS(app)
 app.wsgi_app = ProxyFix(app.wsgi_app)
 
