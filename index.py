@@ -14,7 +14,6 @@ def hello_world():
 
 @app.route('/predict/', methods=['POST'])
 def predict():
-    return 'HELLO TBITCH'
     # try:
     #     is_link = request.get_json()['isLink']
     #     name = request.get_json()['input'].replace(' ', '_')
