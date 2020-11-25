@@ -1,4 +1,5 @@
 from flask import request
+from flask_cors import cross_origin
 from flask_http_response import success, error
 from werkzeug.utils import secure_filename
 from utils import find_file, _download, allowed_file, logger, call_prediction
@@ -13,6 +14,7 @@ def hello_world():
 
 
 @app.route('/predict/', methods=['POST'])
+@cross_origin()
 def predict():
     return str(request)
     # try:
@@ -35,6 +37,7 @@ def predict():
 
 
 @app.route('/upload/', methods=['POST'])
+@cross_origin()
 def upload_file():
     try:
         f = request.files['image']
