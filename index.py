@@ -14,24 +14,24 @@ def hello_world():
 
 @app.route('/predict/', methods=['POST'])
 def predict():
-    try:
-        print(request.get_json())
-        is_link = request.get_json()['isLink']
-        name = request.get_json()['input'].replace(' ', '_')
-        if is_link:
-            file = _download(name)
-            if file['success']:
-                return call_prediction(file['name'])
-            else:
-                logger('Faulty link', request)
-                return error.return_response(message='Link is not correct', status=400)
-        elif find_file(name):
-            return call_prediction(name)
-        else:
-            logger('File not found', request)
-            return error.return_response(message='File not found', status=404)
-    except:
-        return error.return_response(message='Something was wrong', status=500)
+    return 'HELLO TBITCH'
+    # try:
+    #     is_link = request.get_json()['isLink']
+    #     name = request.get_json()['input'].replace(' ', '_')
+    #     if is_link:
+    #         file = _download(name)
+    #         if file['success']:
+    #             return call_prediction(file['name'])
+    #         else:
+    #             logger('Faulty link', request)
+    #             return error.return_response(message='Link is not correct', status=400)
+    #     elif find_file(name):
+    #         return call_prediction(name)
+    #     else:
+    #         logger('File not found', request)
+    #         return error.return_response(message='File not found', status=404)
+    # except:
+    #     return error.return_response(message='Something was wrong', status=500)
 
 
 @app.route('/upload/', methods=['POST'])
@@ -55,5 +55,5 @@ if __name__ == '__main__':
 
     app.config['CORS_HEADERS'] = 'Content-Type'
     print('Love is forever...')
-    serve(app, host="0.0.0.0", port=4000)
+    serve(app, listen='*:4000')
 
